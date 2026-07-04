@@ -1,6 +1,25 @@
+import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
+  const [spells, setSpells] = useState(null);
+  const [page, setPage] = useState(1); //setPage still to be used later
+
+  useEffect(() => {
+    async function getSpellList() {
+      const PAGE_SIZE = 20;
+      const spellList = await fetch(
+        "https://www.dnd5eapi.co/api/2014/spells",
+      ).then((res) => res.json());
+
+      const start = (page - 1) * PAGE_SIZE;
+
+      setSpells(await spellList.results.slice(start, start + PAGE_SIZE));
+    }
+
+    getSpellList();
+  });
+
   return (
     <>
       <header>
@@ -35,6 +54,19 @@ function App() {
           </div>
           <img src="src\assets\logo.svg" alt="Logo do site" />
         </header>
+        <section className="spells">
+          {spells ? (
+            spells.map((element) => {
+              return (
+                <div className="spellCard" key={element.index}>
+                  <h3>{element.name}</h3>
+                </div>
+              );
+            })
+          ) : (
+            <p>Carregando...</p>
+          )}
+        </section>
       </main>
       <footer>
         <p>

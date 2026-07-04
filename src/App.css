@@ -47,8 +47,6 @@ main {
   box-shadow: 
     0 8px 30px rgba(0,0,0,.35),
     0 2px 6px rgba(0,0,0,.2);
-    
-  min-height: 100vh;
   width: min(900px, 90vw);
   margin: auto;
   padding: 10px;
@@ -61,6 +59,22 @@ main {
     & img {
       height: 52px;
       width: 52px;
+    }
+  }
+
+  & .spells {
+    display: grid;
+    flex-wrap: wrap;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(200px, 1fr));
+    padding: 20px;
+
+    & .spellCard {
+      word-break: break-all;
+      border: 1px solid black;
+      height: 200px;
+      margin: 5px;
+      padding: 10px;
     }
   }
 }
