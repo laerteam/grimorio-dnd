@@ -10,12 +10,21 @@
   --dark-wood: #2b2118;
 }
 
-h1, h2, .subtitle {
-  margin: 0 10px;
+h1,
+h2,
+h3,
+.subtitle {
+  margin-left: 5px;
+  margin-bottom: 8px;
   font-family: "Lusitana", serif;
 }
 
-a, abbr {
+p {
+  margin-left: 5px;
+}
+
+a,
+abbr {
   font-style: none;
   text-decoration: none;
 }
@@ -44,10 +53,10 @@ main {
   background-color: #f3ecd4;
   background-blend-mode: multiply;
   border-radius: 5px;
-  box-shadow: 
-    0 8px 30px rgba(0,0,0,.35),
-    0 2px 6px rgba(0,0,0,.2);
-  width: min(900px, 90vw);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.2);
+  width: min(930px, 90vw);
   margin: auto;
   padding: 10px;
 
@@ -62,19 +71,63 @@ main {
     }
   }
 
+  & button {
+    display: block;
+    font-size: 16px;
+    height: 20px;
+    margin: auto 0 0 auto;
+    border: none;
+    background-color: rgba(0, 0, 0, 0);
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
   & .spells {
     display: grid;
-    flex-wrap: wrap;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    grid-template-rows: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, 210px);
+    grid-template-rows: repeat(auto-fit, 210px);
+    gap: 5px;
     padding: 20px;
 
     & .spellCard {
-      word-break: break-all;
-      border: 1px solid black;
-      height: 200px;
-      margin: 5px;
-      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      height: 210px;
+      padding: 5px;
+      border: 1px solid #000;
+    }
+  }
+
+  #spellInfo {
+    background-image: url(assets/background.jpg);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(930px, 90vw);
+    padding: 10px;
+
+    .spellValues,
+    .spellDescription {
+      margin-left: 10px;
+    }
+
+    .damageStats table,
+    .healStats table {
+      margin-left: 25px;
+
+      th {
+        padding: 5px;
+        border: 1px solid #000;
+      }
+
+      td {
+        text-align: center;
+        border: 1px solid #000;
+      }
     }
   }
 }

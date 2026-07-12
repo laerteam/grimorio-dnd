@@ -1,9 +1,129 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
+function SpellHeader({ spell }) {
+  return (
+    <>
+      <h3>{spell.name}</h3>
+      <p className="subtitle">
+        <strong>
+          Level {spell.level} - {spell.school.name}
+        </strong>
+      </p>
+    </>
+  );
+}
+
+function SpellStats({ spell }) {
+  return (
+    <>
+      <p>
+        <strong>Range: </strong>
+        {spell.range}
+      </p>
+      <p>
+        <strong>Duration: </strong>
+        {spell.concentration && "Concentration, "}
+        {spell.duration}
+      </p>
+      <p>
+        <strong>Casting Time: </strong>
+        {spell.casting_time}
+      </p>
+      <p>
+        <strong>Components: </strong>
+        {spell.components}
+      </p>
+      {spell.material && (
+        <p>
+          <strong>Material: </strong>
+          {spell.material}
+        </p>
+      )}
+      <p>
+        <strong>Classes: </strong>
+        {spell.classes.map((el) => el.name).join(", ")}
+        <strong> Subclasses: </strong>
+        {spell.subclasses
+          ? spell.subclasses.map((el) => el.name).join(", ")
+          : ""}
+      </p>
+      {spell.ritual && (
+        <p>
+          <strong>Can Ritual •</strong>
+        </p>
+      )}
+      {spell.dc && (
+        <p>
+          <strong>DC: </strong>
+          {spell.dc.dc_type.name}
+        </p>
+      )}
+    </>
+  );
+}
+
+function getSpellScaling(spell) {
+  if (spell.damage) {
+    return Object.entries(
+      spell.damage.damage_at_slot_level ??
+        spell.damage.damage_at_character_level,
+    );
+  }
+
+  if (spell.heal_at_slot_level) {
+    return Object.entries(spell.heal_at_slot_level);
+  }
+
+  return [];
+}
+
+function SpellScaling({ spell }) {
+  const scaling = getSpellScaling(spell);
+
+  if (!scaling.length) return null;
+
+  return (
+    <div className={spell.damage ? "damageStats" : "healStats"}>
+      {spell.damage && (
+        <p>
+          <strong>Damage Type: </strong>
+          {spell.damage.damage_type.name}
+        </p>
+      )}
+      <p>
+        <strong>{spell.damage ? "Damage Per Level" : "Heal Per Level"}</strong>
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>
+              {spell.damage
+                ? spell.damage.damage_at_slot_level
+                  ? "Slot Level"
+                  : "Character Level"
+                : "Slot Level"}
+            </th>
+            <th>{spell.damage ? "Damage" : "Heal"}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scaling.map(([level, value]) => (
+            <tr key={level}>
+              <td>{level}</td>
+              <td>{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function App() {
   const [spells, setSpells] = useState(null);
   const [page, setPage] = useState(1); //setPage still to be used later
+  const [selectedSpell, setSelectedSpell] = useState(null);
 
   useEffect(() => {
     async function getSpellList() {
@@ -14,11 +134,36 @@ function App() {
 
       const start = (page - 1) * PAGE_SIZE;
 
-      setSpells(await spellList.results.slice(start, start + PAGE_SIZE));
+      const spellIndex = spellList.results.slice(start, start + PAGE_SIZE);
+
+      const spellDetails = await Promise.all(
+        spellIndex.map((el) => {
+          const spell = fetch(
+            `https://www.dnd5eapi.co/api/2014/spells/${el.index}`,
+          ).then((res) => res.json());
+
+          return spell;
+        }),
+      );
+
+      setSpells(spellDetails);
     }
 
     getSpellList();
-  });
+  }, [page]);
+
+  function openSpellInfo(spell) {
+    setSelectedSpell(() => ({
+      ...spell,
+    }));
+    const spellInfo = document.getElementById("spellInfo");
+    spellInfo.showModal();
+  }
+
+  function closeSpellInfo() {
+    const spellInfo = document.getElementById("spellInfo");
+    spellInfo.close();
+  }
 
   return (
     <>
@@ -49,17 +194,40 @@ function App() {
           <div>
             <h2>Grimório</h2>
             <p className="subtitle">
-              Consulte todas as magias catalogadas pela Ordem Arcana.
+              Consulte todas as magias catalogadas pela Ordem Arcana. (Ainda a
+              ser traduzido para pt-BR)
             </p>
           </div>
           <img src="src\assets\logo.svg" alt="Logo do site" />
         </header>
         <section className="spells">
           {spells ? (
-            spells.map((element) => {
+            spells.map((el) => {
               return (
-                <div className="spellCard" key={element.index}>
-                  <h3>{element.name}</h3>
+                <div className="spellCard" key={el.index}>
+                  <h3>{el.name}</h3>
+                  <p className="subtitle">
+                    <strong>
+                      Level {el.level} - {el.school.name}
+                    </strong>
+                  </p>
+                  <p>
+                    <strong>Range: </strong>
+                    {el.range}
+                  </p>
+                  <p>
+                    <strong>duration: </strong>
+                    {el.duration}
+                  </p>
+                  <p>
+                    <strong>Casting Time: </strong>
+                    {el.casting_time}
+                  </p>
+                  <p>
+                    <strong>Components: </strong>
+                    {el.compoennts}
+                  </p>
+                  <button onClick={() => openSpellInfo(el)}>Details ▼</button>
                 </div>
               );
             })
@@ -67,6 +235,26 @@ function App() {
             <p>Carregando...</p>
           )}
         </section>
+        <dialog id="spellInfo">
+          {selectedSpell && (
+            <>
+              <SpellHeader spell={selectedSpell} />
+              <div className="spellValues">
+                <SpellStats spell={selectedSpell} />
+                <SpellScaling spell={selectedSpell} />
+              </div>
+              <div className="spellDescription">
+                <p>
+                  <strong>Description: </strong>
+                  {selectedSpell.desc}
+                </p>{" "}
+                <br />
+                <p>{selectedSpell.higher_level}</p>
+              </div>
+              <button onClick={closeSpellInfo}>Close ▼</button>
+            </>
+          )}
+        </dialog>
       </main>
       <footer>
         <p>
