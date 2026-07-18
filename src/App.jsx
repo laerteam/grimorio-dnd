@@ -32,7 +32,7 @@ function SpellStats({ spell }) {
       </p>
       <p>
         <strong>Components: </strong>
-        {spell.components}
+        {spell.components.join(", ")}
       </p>
       {spell.material && (
         <p>
@@ -122,11 +122,16 @@ function SpellScaling({ spell }) {
 
 function App() {
   const [spells, setSpells] = useState(null);
-  const [page, setPage] = useState(1); //setPage still to be used later
+  const [page, setPage] = useState(1);
   const [selectedSpell, setSelectedSpell] = useState(null);
 
   useEffect(() => {
     async function getSpellList() {
+      const prevPage = document.querySelector(".prevPage");
+      const nextPage = document.querySelector(".nextPage");
+      const spellsDocument = document.querySelector(".spellsDocument");
+      spellsDocument.classList.add("leaving");
+
       const PAGE_SIZE = 20;
       const spellList = await fetch(
         "https://www.dnd5eapi.co/api/2014/spells",
@@ -135,6 +140,18 @@ function App() {
       const start = (page - 1) * PAGE_SIZE;
 
       const spellIndex = spellList.results.slice(start, start + PAGE_SIZE);
+
+      if (page == 1) {
+        prevPage.classList.add("hidden");
+      } else {
+        prevPage.classList.remove("hidden");
+      }
+
+      if (page * PAGE_SIZE >= spellList.count) {
+        nextPage.classList.add("hidden");
+      } else {
+        nextPage.classList.remove("hidden");
+      }
 
       const spellDetails = await Promise.all(
         spellIndex.map((el) => {
@@ -146,6 +163,7 @@ function App() {
         }),
       );
 
+      spellsDocument.classList.remove("leaving");
       setSpells(spellDetails);
     }
 
@@ -190,71 +208,90 @@ function App() {
         </nav>
       </header>
       <main>
-        <header>
-          <div>
-            <h2>Grimório</h2>
-            <p className="subtitle">
-              Consulte todas as magias catalogadas pela Ordem Arcana. (Ainda a
-              ser traduzido para pt-BR)
-            </p>
-          </div>
-          <img src="src\assets\logo.svg" alt="Logo do site" />
-        </header>
-        <section className="spells">
-          {spells ? (
-            spells.map((el) => {
-              return (
-                <div className="spellCard" key={el.index}>
-                  <h3>{el.name}</h3>
-                  <p className="subtitle">
-                    <strong>
-                      Level {el.level} - {el.school.name}
-                    </strong>
-                  </p>
-                  <p>
-                    <strong>Range: </strong>
-                    {el.range}
-                  </p>
-                  <p>
-                    <strong>duration: </strong>
-                    {el.duration}
-                  </p>
-                  <p>
-                    <strong>Casting Time: </strong>
-                    {el.casting_time}
-                  </p>
-                  <p>
-                    <strong>Components: </strong>
-                    {el.compoennts}
-                  </p>
-                  <button onClick={() => openSpellInfo(el)}>Details ▼</button>
+        <div className="waiting">
+          <p>Aguarde um momento</p>
+        </div>
+        <div className="spellsDocument leaving">
+          <header>
+            <div>
+              <h2>Grimório</h2>
+              <p className="subtitle">
+                Consulte todas as magias catalogadas pela Ordem Arcana. (Ainda a
+                ser traduzido para pt-BR)
+              </p>
+            </div>
+            <img src="src\assets\logo.svg" alt="Logo do site" />
+          </header>
+          <nav
+            className="spellsNav"
+            aria-label="Paginação do catálogo de magias"
+          >
+            <button
+              className="prevPage"
+              onClick={() => setPage((prevPage) => prevPage - 1)}
+            >
+              <strong>◀ Prev</strong>
+            </button>
+            <button
+              className="nextPage"
+              onClick={() => setPage((prevPage) => prevPage + 1)}
+            >
+              <strong>Next ▶</strong>
+            </button>
+          </nav>
+          <section className="spells">
+            {spells &&
+              spells.map((el) => {
+                return (
+                  <div className="spellCard" key={el.index}>
+                    <h3>{el.name}</h3>
+                    <p className="subtitle">
+                      <strong>
+                        Level {el.level} - {el.school.name}
+                      </strong>
+                    </p>
+                    <p>
+                      <strong>Range: </strong>
+                      {el.range}
+                    </p>
+                    <p>
+                      <strong>duration: </strong>
+                      {el.duration}
+                    </p>
+                    <p>
+                      <strong>Casting Time: </strong>
+                      {el.casting_time}
+                    </p>
+                    <p>
+                      <strong>Components: </strong>
+                      {el.components.join(", ")}
+                    </p>
+                    <button onClick={() => openSpellInfo(el)}>Details ▼</button>
+                  </div>
+                );
+              })}
+          </section>
+          <dialog id="spellInfo">
+            {selectedSpell && (
+              <>
+                <SpellHeader spell={selectedSpell} />
+                <div className="spellValues">
+                  <SpellStats spell={selectedSpell} />
+                  <SpellScaling spell={selectedSpell} />
                 </div>
-              );
-            })
-          ) : (
-            <p>Carregando...</p>
-          )}
-        </section>
-        <dialog id="spellInfo">
-          {selectedSpell && (
-            <>
-              <SpellHeader spell={selectedSpell} />
-              <div className="spellValues">
-                <SpellStats spell={selectedSpell} />
-                <SpellScaling spell={selectedSpell} />
-              </div>
-              <div className="spellDescription">
-                <p>
-                  <strong>Description: </strong>
-                  {selectedSpell.desc}
-                </p>{" "}
-                <br />
-                <p>{selectedSpell.higher_level}</p>
-              </div>
-              <button onClick={closeSpellInfo}>Close ▼</button>
-            </>
-          )}
-        </dialog>
+                <div className="spellDescription">
+                  <p>
+                    <strong>Description: </strong>
+                    {selectedSpell.desc}
+                  </p>{" "}
+                  <br />
+                  <p>{selectedSpell.higher_level}</p>
+                </div>
+                <button onClick={closeSpellInfo}>Close ▼</button>
+              </>
+            )}
+          </dialog>
+        </div>
       </main>
       <footer>
         <p>
