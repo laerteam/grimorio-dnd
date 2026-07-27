@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 function SpellHeader({ spell }) {
@@ -124,6 +124,8 @@ function App() {
   const [spells, setSpells] = useState(null);
   const [page, setPage] = useState(1);
   const [selectedSpell, setSelectedSpell] = useState(null);
+  const [reload, setReload] = useState(0);
+  const filters = useRef({ searchSpell: "" });
 
   useEffect(() => {
     async function getSpellList() {
@@ -133,13 +135,21 @@ function App() {
       spellsDocument.classList.add("leaving");
 
       const PAGE_SIZE = 20;
-      const spellList = await fetch(
-        "https://www.dnd5eapi.co/api/2014/spells",
-      ).then((res) => res.json());
+      const spellList = await fetch("https://www.dnd5eapi.co/api/2014/spells")
+        .then((res) => res.json())
+        .then((res) => {
+          if (!filters.current.searchSpell.trim()) return res.results;
+
+          return res.results.filter((el) =>
+            el.name
+              .toLowerCase()
+              .includes(filters.current.searchSpell.toLowerCase()),
+          );
+        });
 
       const start = (page - 1) * PAGE_SIZE;
-
-      const spellIndex = spellList.results.slice(start, start + PAGE_SIZE);
+      const spellCount = spellList.length;
+      const spellIndex = spellList.slice(start, start + PAGE_SIZE);
 
       if (page == 1) {
         prevPage.classList.add("hidden");
@@ -147,7 +157,7 @@ function App() {
         prevPage.classList.remove("hidden");
       }
 
-      if (page * PAGE_SIZE >= spellList.count) {
+      if (page * PAGE_SIZE >= spellCount) {
         nextPage.classList.add("hidden");
       } else {
         nextPage.classList.remove("hidden");
@@ -168,7 +178,7 @@ function App() {
     }
 
     getSpellList();
-  }, [page]);
+  }, [page, reload]);
 
   function openSpellInfo(spell) {
     setSelectedSpell(() => ({
@@ -181,6 +191,16 @@ function App() {
   function closeSpellInfo() {
     const spellInfo = document.getElementById("spellInfo");
     spellInfo.close();
+  }
+
+  function filtering() {
+    const searchSpell = document.querySelector(".searchSpell");
+    filters.current = { searchSpell: searchSpell.value };
+    if (page === 1) {
+      setReload((prev) => prev + 1);
+    } else {
+      setPage(1);
+    }
   }
 
   return (
@@ -226,18 +246,30 @@ function App() {
             className="spellsNav"
             aria-label="Paginação do catálogo de magias"
           >
-            <button
-              className="prevPage"
-              onClick={() => setPage((prevPage) => prevPage - 1)}
-            >
-              <strong>◀ Prev</strong>
-            </button>
-            <button
-              className="nextPage"
-              onClick={() => setPage((prevPage) => prevPage + 1)}
-            >
-              <strong>Next ▶</strong>
-            </button>
+            <div className="navSearch">
+              <input
+                className="searchSpell"
+                placeholder="Pesquisar"
+                type="text"
+              />
+              <button id="searchFilter" onClick={filtering}>
+                ⌕
+              </button>
+            </div>
+            <div className="navPages">
+              <button
+                className="prevPage"
+                onClick={() => setPage((prevPage) => prevPage - 1)}
+              >
+                <strong>◀ Prev</strong>
+              </button>
+              <button
+                className="nextPage"
+                onClick={() => setPage((prevPage) => prevPage + 1)}
+              >
+                <strong>Next ▶</strong>
+              </button>
+            </div>
           </nav>
           <section className="spells">
             {spells &&

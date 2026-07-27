@@ -132,8 +132,65 @@ div.spellsDocument {
   }
 
   .spellsNav {
-    display: flex;
-    justify-content: space-between;
+    margin-top: 10px;
+
+    .navPages {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .navSearch {
+      display: flex;
+      justify-content: center;
+
+      & button {
+        display: inline;
+        transition: transform 0.3s ease;
+        height: 28px;
+        font-size: 36px;
+        line-height: 8px;
+
+        &:hover {
+          color: var(--wine);
+          transform: scale(1.15);
+          text-decoration: none;
+        }
+      }
+
+      & input {
+        display: block;
+        font:
+          16px "Lusitana",
+          serif;
+        background-color: #0000;
+        width: 30%;
+        text-indent: 5px;
+        transition: border-color 0.3s;
+        border: 0;
+        border-bottom: 2px solid black;
+
+        &:focus {
+          border: 0;
+          border-bottom: 2px solid var(--wine);
+          outline: 0;
+
+          &::placeholder {
+            color: var(--wine);
+          }
+        }
+
+        &::placeholder {
+          color: #000;
+          font:
+            italic 16px "Lusitana",
+            serif;
+          transition: color 0.3s;
+          opacity: 0.6;
+          text-indent: 0;
+          text-decoration: none;
+        }
+      }
+    }
 
     & button {
       margin: 0 5px;
