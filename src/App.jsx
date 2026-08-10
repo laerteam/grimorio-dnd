@@ -124,8 +124,29 @@ function App() {
   const [spells, setSpells] = useState(null);
   const [page, setPage] = useState(1);
   const [selectedSpell, setSelectedSpell] = useState(null);
+
+  const [schoolOpen, setSchoolOpen] = useState(false);
+  const [levelOpen, setLevelOpen] = useState(false);
+
   const [reload, setReload] = useState(0);
-  const filters = useRef({ searchSpell: "" });
+  const [filters, setFilters] = useState({
+    searchSpell: "",
+    schools: [],
+    levels: [],
+  });
+  const filtersRef = useRef({ searchSpell: "", schools: [], levels: [] });
+
+  const levelList = Array.from({ length: 10 }, (_, i) => i);
+  const schoolList = [
+    "abjuration",
+    "conjuration",
+    "divination",
+    "enchantment",
+    "evocation",
+    "illusion",
+    "necromancy",
+    "transmutation",
+  ];
 
   useEffect(() => {
     async function getSpellList() {
@@ -135,15 +156,26 @@ function App() {
       spellsDocument.classList.add("leaving");
 
       const PAGE_SIZE = 20;
-      const spellList = await fetch("https://www.dnd5eapi.co/api/2014/spells")
+      const query = [
+        filtersRef.current.schools.length &&
+          `school=${filtersRef.current.schools.join("%2C")}`,
+        filtersRef.current.levels.length &&
+          `level=${filtersRef.current.levels.join("%2C")}`,
+      ]
+        .filter(Boolean)
+        .join("&");
+
+      const spellList = await fetch(
+        `https://www.dnd5eapi.co/api/2014/spells${query ? `?${query}` : ""}`,
+      )
         .then((res) => res.json())
         .then((res) => {
-          if (!filters.current.searchSpell.trim()) return res.results;
+          if (!filtersRef.current.searchSpell.trim()) return res.results;
 
           return res.results.filter((el) =>
             el.name
               .toLowerCase()
-              .includes(filters.current.searchSpell.toLowerCase()),
+              .includes(filtersRef.current.searchSpell.toLowerCase()),
           );
         });
 
@@ -195,11 +227,42 @@ function App() {
 
   function filtering() {
     const searchSpell = document.querySelector(".searchSpell");
-    filters.current = { searchSpell: searchSpell.value };
+    filtersRef.current = {
+      ...filters,
+      searchSpell: searchSpell.value,
+    };
     if (page === 1) {
       setReload((prev) => prev + 1);
     } else {
       setPage(1);
+    }
+  }
+
+  function toggleSchool(school) {
+    if (filters.schools.includes(school)) {
+      setFilters((prev) => ({
+        ...prev,
+        schools: prev.schools.filter((s) => s !== school),
+      }));
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        schools: [...prev.schools, school],
+      }));
+    }
+  }
+
+  function toggleLevel(level) {
+    if (filters.levels.includes(level)) {
+      setFilters((prev) => ({
+        ...prev,
+        levels: prev.levels.filter((s) => s !== level),
+      }));
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        levels: [...prev.levels, level],
+      }));
     }
   }
 
@@ -255,6 +318,54 @@ function App() {
               <button id="searchFilter" onClick={filtering}>
                 ⌕
               </button>
+              <div className="filterOptions">
+                <button onClick={() => setSchoolOpen(!schoolOpen)}>
+                  Escola{" "}
+                  {filters.schools.length !== 0
+                    ? `(${filters.schools.length})`
+                    : ""}{" "}
+                  ▼
+                </button>
+
+                {schoolOpen && (
+                  <div className="dropdown">
+                    {schoolList.map((school) => (
+                      <label key={school}>
+                        <input
+                          type="checkbox"
+                          checked={filters.schools.includes(school)}
+                          onChange={() => toggleSchool(school.toLowerCase())}
+                        />
+                        {school[0].toUpperCase() + school.slice(1)}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="filterOptions">
+                <button onClick={() => setLevelOpen(!levelOpen)}>
+                  Nível{" "}
+                  {filters.levels.length !== 0
+                    ? `(${filters.levels.length})`
+                    : ""}{" "}
+                  ▼
+                </button>
+
+                {levelOpen && (
+                  <div className="dropdown">
+                    {levelList.map((level) => (
+                      <label key={level}>
+                        <input
+                          type="checkbox"
+                          checked={filters.levels.includes(level)}
+                          onChange={() => toggleLevel(level)}
+                        />
+                        {level === 0 ? "Truque" : `Nível ${level}`}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="navPages">
               <button

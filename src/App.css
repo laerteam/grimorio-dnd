@@ -190,6 +190,36 @@ div.spellsDocument {
           text-decoration: none;
         }
       }
+
+      .filterOptions {
+        position: relative;
+        display: inline;
+        margin-left: 10px;
+
+        & button {
+          font-size: 18px;
+          margin-right: 25px;
+          height: 0;
+        }
+
+        & input {
+          display: inline;
+          width: auto;
+          margin: 0 10px;
+        }
+      }
+
+      .dropdown {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        top: 100%;
+        left: 0;
+        min-width: 160px;
+        padding: 5px;
+        background: #fff;
+        border: 1px solid #000;
+      }
     }
 
     & button {
