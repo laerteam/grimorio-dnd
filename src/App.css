@@ -141,7 +141,9 @@ div.spellsDocument {
 
     .navSearch {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
 
       & button {
         display: inline;
@@ -193,19 +195,16 @@ div.spellsDocument {
 
       .filterOptions {
         position: relative;
-        display: inline;
         margin-left: 10px;
 
         & button {
           font-size: 18px;
-          margin-right: 25px;
-          height: 0;
         }
 
         & input {
           display: inline;
           width: auto;
-          margin: 0 10px;
+          margin: 0 5px;
         }
       }
 
@@ -214,8 +213,7 @@ div.spellsDocument {
         display: flex;
         flex-direction: column;
         top: 100%;
-        left: 0;
-        min-width: 160px;
+        width: 160px;
         padding: 5px;
         background: #fff;
         border: 1px solid #000;
@@ -229,8 +227,7 @@ div.spellsDocument {
 
   & .spells {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 210px);
-    grid-template-rows: repeat(auto-fit, 210px);
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 5px;
     padding: 20px;
 
@@ -297,5 +294,31 @@ footer {
 
   &:hover small {
     opacity: 100%;
+  }
+}
+
+@media (max-width: 875px) {
+  main {
+    width: 90vw;
+    transform: none;
+  }
+
+  div.spellsDocument {
+    transform: none;
+  }
+
+  .searchSpell {
+    min-width: 70%;
+  }
+
+  button {
+    height: 40px;
+  }
+
+  .filterOptions {
+    display: flex;
+    justify-content: center;
+    width: 40%;
+    margin: 15px 0 30px 0;
   }
 }
