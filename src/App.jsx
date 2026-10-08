@@ -64,10 +64,10 @@ function SpellStats({ spell }) {
 }
 
 function getSpellScaling(spell) {
-  if (spell.damage) {
+  if (spell.damage[0]) {
     return Object.entries(
-      spell.damage.damage_at_slot_level ??
-        spell.damage.damage_at_character_level,
+      spell.damage[0].damage_at_slot_level ??
+        spell.damage[0].damage_at_character_level,
     );
   }
 
@@ -80,31 +80,32 @@ function getSpellScaling(spell) {
 
 function SpellScaling({ spell }) {
   const scaling = getSpellScaling(spell);
+  const dmg = spell.damage[0]
 
   if (!scaling.length) return null;
 
   return (
-    <div className={spell.damage ? "damageStats" : "healStats"}>
-      {spell.damage && (
+    <div className={dmg ? "damageStats" : "healStats"}>
+      {spell.dmg && (
         <p>
           <strong>Damage Type: </strong>
-          {spell.damage.damage_type.name}
+          {dmg.damage_type.name}
         </p>
       )}
       <p>
-        <strong>{spell.damage ? "Damage Per Level" : "Heal Per Level"}</strong>
+        <strong>{dmg ? "Damage Per Level" : "Heal Per Level"}</strong>
       </p>
       <table>
         <thead>
           <tr>
             <th>
-              {spell.damage
-                ? spell.damage.damage_at_slot_level
+              {dmg
+                ? dmg.damage_at_slot_level
                   ? "Slot Level"
                   : "Character Level"
                 : "Slot Level"}
             </th>
-            <th>{spell.damage ? "Damage" : "Heal"}</th>
+            <th>{dmg ? "Damage" : "Heal"}</th>
           </tr>
         </thead>
         <tbody>
@@ -198,7 +199,7 @@ function App() {
       const spellDetails = await Promise.all(
         spellIndex.map((el) => {
           const spell = fetch(
-            `https://www.dnd5eapi.co/api/2014/spells/${el.index}`,
+            `https://www.dnd5eapi.co/api/2014/spells/${el.index}?lang=pt-br`,
           ).then((res) => res.json());
 
           return spell;
